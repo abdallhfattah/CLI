@@ -8,7 +8,6 @@ public class Terminal {
 	Parser parser;
 	Path newResultPath;
 	String currDir;
-
 	// Implement each command in a method, for example:
 	public Terminal() {
 		// Initialize member variables in the constructor.
@@ -49,9 +48,17 @@ public class Terminal {
 	}
 
 	public void rmdir(ArrayList<String> args) {
+
 	}
 
 	public void echo(ArrayList<String> args) {
+		if(args.size() > 1){
+			System.err.println("Too Many arguments");
+			return;
+		}
+		for(String Print : args){
+			System.out.println(Print);
+		}
 	}
 
 	// This method will choose the suitable command method to be called
