@@ -8,6 +8,7 @@ public class Terminal {
 	Parser parser;
 	Path newResultPath;
 	String currDir;
+
 	// Implement each command in a method, for example:
 	public Terminal() {
 		// Initialize member variables in the constructor.
@@ -24,6 +25,38 @@ public class Terminal {
 	}
 
 	public void mkdir(ArrayList<String> args) {
+		if(args.size() == 0){
+			System.err.println("mkdir: missing operand");
+			return;
+		}
+		for (String arg : args) {
+			Path newPath;
+			// Check if the argument is an absolute path (e.g., "C:/example").
+			if (arg.length() >= 2 && arg.charAt(1) == ':') {
+				newPath = Paths.get(arg);
+			} else {
+				// Construct the full path by combining the current directory and the argument.
+				newPath = Paths.get(currDir, arg);
+			}
+			// Create a File object for the new directory.
+			File newDir = newPath.toFile();
+			if (!newDir.exists()) {
+				if (newDir.mkdirs()) {
+					System.out.println("Created directory: " + newPath);
+				} else {
+					System.out.println("Failed to create directory: " + newPath);
+				}
+			} else {
+				System.out.println("Directory already exists: " + newPath);
+			}
+		}
+	}
+
+	public void rmdir(ArrayList<String> args) {
+		if(args.size() > 1 || args.size() == 0){
+			System.err.println("Missing arguments!");
+			return;
+		}
 		for (String arg : args) {
 			Path newPath;
 			 // Check if the argument is an absolute path (e.g., "C:/example").
@@ -47,16 +80,12 @@ public class Terminal {
 		}
 	}
 
-	public void rmdir(ArrayList<String> args) {
-
-	}
-
 	public void echo(ArrayList<String> args) {
-		if(args.size() > 1){
-			System.err.println("Too Many arguments");
+		if (args.size() > 1) {
+			System.err.println("Too many arguments!");
 			return;
 		}
-		for(String Print : args){
+		for (String Print : args) {
 			System.out.println(Print);
 		}
 	}
