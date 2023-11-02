@@ -2,39 +2,54 @@ import java.util.ArrayList;
 
 public class Filter {
 
-	private String toFilter;
 	private String command;
 	private ArrayList<String> args;
 
 	Filter(String input) {
-		this.toFilter = input;
-        this.command = "";
-        this.args = new ArrayList<String>();
-
+		input += ' ';
+		this.command = "";
+		this.args = new ArrayList<String>();
 		int itr = 0;
+		// capture command
 		for (int i = 0; i < input.length(); i++) {
-			while (input.charAt(i) != ' ') {
-				this.command += input.charAt(i);
-				i++;
+			if (input.charAt(i) != ' ') {
+				this.command = getArg(input, i, ' ');
+				itr = command.length() + i;
+				break;
 			}
-			itr = i;
 		}
+
+		String arg = "";
+
+		// capture arguments
 		for (int i = itr; i < input.length(); i++) {
-			String arg = "";
-			while (input.charAt(i) != ' ') {
-				if (input.charAt(i) == '\"') {
+			Character currChar = input.charAt(i);
+			if (currChar != ' ') {
+				if (currChar == '\"') {
 					i++;
-					while (input.charAt(i) != '\"') {
-						arg += input.charAt(++i);
-					}
+					arg = getArg(input , i , '\"');
+					args.add(arg);
+					i += arg.length();
+				}
+				else{
+					// cases "-r"
+					if(currChar == '-') i++;
+					arg = getArg(input , i , ' ');
+					i += arg.length();
 					args.add(arg);
 				}
-				if (input.charAt(i) != '\"') {
-					arg += input.charAt(i);
-				}
 			}
-			
+
 		}
+	}
+
+	String getArg(String input, int index , Character toStop) {
+		String quoted = "";
+		while (input.charAt(index) != toStop) {
+			quoted += input.charAt(index);
+			index++;
+		}
+		return quoted;
 	}
 
 	public String getCommandFiltered() {
