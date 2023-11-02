@@ -1,6 +1,8 @@
+import java.util.ArrayList;
+
 class Parser {
 	String commandName;
-	String[] args;
+	ArrayList<String> args;
 
 	// This method will divide the input into commandName and args
 	// where "input" is the string command entered by the user
@@ -15,7 +17,7 @@ class Parser {
 		return commandName;
 	}
 
-	public String[] getArgs() {
+	public ArrayList<String> getArgs() {
 		return args;
 	}
 }

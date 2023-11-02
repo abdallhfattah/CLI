@@ -1,13 +1,15 @@
+import java.util.ArrayList;
+
 public class Filter {
 
 	private String toFilter;
 	private String command;
-	private String[] args;
+	private ArrayList<String> args;
 
 	Filter(String input) {
 		this.toFilter = input;
         this.command = "";
-        this.args = new String[0];
+        this.args = new ArrayList<String>();
 
 		int itr = 0;
 		for (int i = 0; i < input.length(); i++) {
@@ -18,14 +20,14 @@ public class Filter {
 			itr = i;
 		}
 		for (int i = itr; i < input.length(); i++) {
-			String arg = new String();
+			String arg = "";
 			while (input.charAt(i) != ' ') {
 				if (input.charAt(i) == '\"') {
 					i++;
 					while (input.charAt(i) != '\"') {
 						arg += input.charAt(++i);
 					}
-					args.
+					args.add(arg);
 				}
 				if (input.charAt(i) != '\"') {
 					arg += input.charAt(i);
@@ -39,7 +41,7 @@ public class Filter {
 		return command;
 	}
 
-	public String[] getArgsFiltered() {
+	public ArrayList<String> getArgsFiltered() {
 		return args;
 	}
 }
