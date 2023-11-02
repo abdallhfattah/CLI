@@ -18,7 +18,7 @@ public class Terminal {
 	}
 
 	public String pwd() {
-		return " ";
+		return currDir;
 	}
 
 	public void cd(ArrayList<String> args) {
@@ -26,7 +26,6 @@ public class Terminal {
 
 	public void mkdir(ArrayList<String> args) {
 		for (String arg : args) {
-			// Construct the full path by combining the current directory and the argument.
 			Path newPath;
 			 // Check if the argument is an absolute path (e.g., "C:/example").
             if (arg.length() >= 2 && arg.charAt(1) == ':') {
@@ -82,6 +81,7 @@ public class Terminal {
 	}
 
 	public static void main(String[] args) {
+
 		Scanner scanner = new Scanner(System.in);
 		Terminal terminal = new Terminal();
 		while (true) {
