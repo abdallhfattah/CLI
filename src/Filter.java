@@ -18,9 +18,7 @@ public class Filter {
 				break;
 			}
 		}
-
 		String arg = "";
-
 		// capture arguments
 		for (int i = itr; i < input.length(); i++) {
 			Character currChar = input.charAt(i);
@@ -44,12 +42,12 @@ public class Filter {
 	}
 
 	String getArg(String input, int index , Character toStop) {
-		String quoted = "";
+		String deliver = "";
 		while (input.charAt(index) != toStop) {
-			quoted += input.charAt(index);
+			deliver += input.charAt(index);
 			index++;
 		}
-		return quoted;
+		return deliver;
 	}
 
 	public String getCommandFiltered() {
