@@ -12,9 +12,9 @@ class Parser {
 		this.commandName = filter.getCommandFiltered();
 
 		this.args = filter.getArgsFiltered();
-		
+
 		// System.out.println("======= Verify =======");
-		// System.out.println("command : "   + commandName);
+		// System.out.println("command : " + commandName);
 		// System.out.println(args);
 
 		return true;

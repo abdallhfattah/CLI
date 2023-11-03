@@ -1,5 +1,15 @@
-import java.io.*;
-import java.nio.file.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -9,6 +19,7 @@ public class Terminal {
 	Parser parser;
 	Path newResultPath;
 	String currDir;
+	ArrayList<String> history;
 
 	// Implement each command in a method, for example:
 	public Terminal() {
@@ -16,17 +27,22 @@ public class Terminal {
 		parser = new Parser(); // You may need to provide appropriate arguments.
 		newResultPath = null; // Initialize as needed.
 		currDir = System.getProperty("user.dir"); // Initialize with the current directory
+		history = new ArrayList<String>();
 	}
 
 	public String pwd() {
+		history.add("pwd");
 		return currDir;
 	}
 
 	public void cd(ArrayList<String> args) {
+		history.add("cd");
+
 	}
 
 	public void mkdir(ArrayList<String> args) {
-		if(args.size() == 0){
+		history.add("mkdir");
+		if (args.size() == 0) {
 			System.err.println("mkdir: missing operand");
 			return;
 		}
@@ -52,36 +68,62 @@ public class Terminal {
 			}
 		}
 	}
-
+	
 	public void rmdir(ArrayList<String> args) {
-		if(args.size() > 1 || args.size() == 0){
-			System.err.println("Missing arguments!");
-			return;
-		}
-		for (String arg : args) {
-			Path newPath;
-			 // Check if the argument is an absolute path (e.g., "C:/example").
-            if (arg.length() >= 2 && arg.charAt(1) == ':') {
-                newPath = Paths.get(arg);
+		history.add("rmdir");
+        if (args.size() != 1) {
+            System.out.println("Usage: rmdir <directory>");
+            return;
+        }
+
+        String dirName = args.get(0);
+        File directory = new File(currDir, dirName);
+
+        if (dirName.equals("*")) {
+            // Case 1: rmdir *
+            removeEmptyDirectories(currDir);
+        } else {
+            // Case 2: rmdir <directory>
+            if (directory.exists() && directory.isDirectory()) {
+                if (isDirectoryEmpty(directory)) {
+                    if (directory.delete()) {
+                        System.out.println("Deleted directory: " + directory.getAbsolutePath());
+                    } else {
+                        System.out.println("Failed to delete directory: " + directory.getAbsolutePath());
+                    }
+                } else {
+                    System.out.println("Directory is not empty: " + directory.getAbsolutePath());
+                }
             } else {
-                // Construct the full path by combining the current directory and the argument.
-                newPath = Paths.get(currDir, arg);
+                System.out.println("Directory does not exist: " + directory.getAbsolutePath());
             }
-			// Create a File object for the new directory.
-			File newDir = newPath.toFile();
-			if (!newDir.exists()) {
-				if (newDir.mkdirs()) {
-					System.out.println("Created directory: " + newPath);
-				} else {
-					System.out.println("Failed to create directory: " + newPath);
-				}
-			} else {
-				System.out.println("Directory already exists: " + newPath);
-			}
-		}
-	}
+        }
+    }
+
+	private void removeEmptyDirectories(String path) {
+        File currentDir = new File(path);
+        File[] files = currentDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory() && isDirectoryEmpty(file)) {
+                    if (file.delete()) {
+                        System.out.println("Deleted directory: " + file.getAbsolutePath());
+                    } else {
+                        System.out.println("Failed to delete directory: " + file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
+
+	private boolean isDirectoryEmpty(File directory) {
+        File[] files = directory.listFiles();
+        return (files != null) && (files.length == 0);
+    }
 
 	public void echo(ArrayList<String> args) {
+		history.add("echo");
+		// could make is support multiable
 		if (args.size() > 1) {
 			System.err.println("Too many arguments!");
 			return;
@@ -92,6 +134,7 @@ public class Terminal {
 	}
 
 	public void cat(ArrayList<String> args) throws IOException {
+		history.add("cat");
 		if (args.size() == 1) {
 			FileReader file = new FileReader(args.get(0));
 			BufferedReader reader = new BufferedReader(file);
@@ -99,8 +142,7 @@ public class Terminal {
 			while ((line = reader.readLine()) != null) {
 				System.out.println(line);
 			}
-		}
-		else if (args.size() == 2) {
+		} else if (args.size() == 2) {
 			FileReader file = new FileReader(args.get(0));
 			BufferedReader reader = new BufferedReader(file);
 			FileReader file2 = new FileReader(args.get(1));
@@ -112,14 +154,14 @@ public class Terminal {
 			while ((line = reader2.readLine()) != null) {
 				System.out.println(line);
 			}
-		}
-		else {
+		} else {
 			System.out.println("Cat takes 1 or 2 arguments!");
 			return;
 		}
 	}
 
 	public void cp(ArrayList<String> args) throws IOException {
+		history.add("cat");
 		if (args.size() == 3 && Objects.equals(args.get(0), "r")) {
 			Path sourceDirectory = Paths.get(args.get(1));
 			Path destinationDirectory = Paths.get(args.get(2));
@@ -156,8 +198,7 @@ public class Terminal {
 				e.printStackTrace();
 				System.err.println("Failed to copy the directory.");
 			}
-		}
-		else if (args.size() == 2) {
+		} else if (args.size() == 2) {
 			FileReader file = new FileReader(args.get(0));
 			BufferedReader reader = new BufferedReader(file);
 			String line;
@@ -170,9 +211,15 @@ public class Terminal {
 				writer.newLine();
 			}
 			writer.close();
-		}
-		else {
+		} else {
 			System.out.println("Usage: cp file1 file2\n\t   cp -r dir1 dir2");
+		}
+	}
+	public void getHistory(){
+		int numbering = 1;
+		for(String command : history){
+			System.out.println(numbering + " - " + command);
+			numbering++;
 		}
 	}
 
@@ -200,11 +247,17 @@ public class Terminal {
 			case "cp":
 				cp(args);
 				break;
+			case "history":
+				getHistory();
+				break;
 			case "exit":
 				return true;
 			// Add more command cases here.
 			default:
-				System.out.println("Unknown command: " + command);
+				System.out.println(command + ": command not found");
+		}
+		if(this.history.size() > 15){
+			this.history.remove(this.history.size() - 1);
 		}
 		return false;
 	}
