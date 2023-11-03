@@ -12,6 +12,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -37,6 +38,19 @@ public class Terminal {
 
 	public void cd(ArrayList<String> args) {
 		history.add("cd");
+		if (args.size() == 0) {
+			currDir = System.getProperty("user.home");
+		} else if (args.get(0).equals("..")) {
+			File currentDir = new File(currDir);
+			this.currDir = currentDir.getParent();
+		} else {
+			File newPath = new File(currDir + "/" + args.get(0));
+			if (newPath.exists()) {
+				currDir = newPath.getAbsolutePath();
+			} else {
+				System.out.println("Error: Path '" + newPath.getAbsolutePath() + "' does not exist.");
+			}
+		}
 	}
 
 	public void mkdir(ArrayList<String> args) {
@@ -46,14 +60,7 @@ public class Terminal {
 			return;
 		}
 		for (String arg : args) {
-			Path newPath;
-			// Check if the argument is an absolute path (e.g., "C:/example").
-			if (arg.length() >= 2 && arg.charAt(1) == ':') {
-				newPath = Paths.get(arg);
-			} else {
-				// Construct the full path by combining the current directory and the argument.
-				newPath = Paths.get(currDir, arg);
-			}
+			Path newPath = Paths.get(arg);
 			// Create a File object for the new directory.
 			File newDir = newPath.toFile();
 			if (!newDir.exists()) {
@@ -67,80 +74,93 @@ public class Terminal {
 			}
 		}
 	}
-	
+
 	public void rmdir(ArrayList<String> args) {
 		history.add("rmdir");
-        if (args.size() != 1) {
-            System.out.println("Usage: rmdir <directory>");
-            return;
-        }
-
-        String dirName = args.get(0);
-        File directory = new File(currDir, dirName);
-
-        if (dirName.equals("*")) {
-            // Case 1: rmdir *
-            removeEmptyDirectories(currDir);
-        } else {
-            // Case 2: rmdir <directory>
-            if (directory.exists() && directory.isDirectory()) {
-                if (isDirectoryEmpty(directory)) {
-                    if (directory.delete()) {
-                        System.out.println("Deleted directory: " + directory.getAbsolutePath());
-                    } else {
-                        System.out.println("Failed to delete directory: " + directory.getAbsolutePath());
-                    }
-                } else {
-                    System.out.println("Directory is not empty: " + directory.getAbsolutePath());
-                }
-            } else {
-                System.out.println("Directory does not exist: " + directory.getAbsolutePath());
-            }
-        }
-    }
+		if (args.size() != 1) {
+			System.out.println("Usage: rmdir <directory>");
+			return;
+		}
+		Path newPath = Paths.get(args.get(0));
+		File directory = newPath.toFile();
+		if (args.get(0).equals("*")) {
+			// Case 1: rmdir *
+			removeEmptyDirectories(currDir);
+		} else {
+			// Case 2: rmdir <directory>
+			if (directory.exists() && directory.isDirectory()) {
+				if (isDirectoryEmpty(directory)) {
+					if (directory.delete()) {
+						System.out.println("Deleted directory: " + directory.getAbsolutePath());
+					} else {
+						System.out.println("Failed to delete directory: " + directory.getAbsolutePath());
+					}
+				} else {
+					System.out.println("Directory is not empty: " + directory.getAbsolutePath());
+				}
+			} else {
+				System.out.println("Directory does not exist: " + directory.getAbsolutePath());
+			}
+		}
+	}
 
 	private void removeEmptyDirectories(String path) {
-        File currentDir = new File(path);
-        File[] files = currentDir.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory() && isDirectoryEmpty(file)) {
-                    if (file.delete()) {
-                        System.out.println("Deleted directory: " + file.getAbsolutePath());
-                    } else {
-                        System.out.println("Failed to delete directory: " + file.getAbsolutePath());
-                    }
-                }
-            }
-        }
-    }
-	public void ls(ArrayList<String> args){
-		if(args.size() > 1){
+		System.out.println(path);
+		File currentDir = new File(path);
+		File[] files = currentDir.listFiles();
+		if (files != null) {
+			for (File file : files) {
+				if (file.isDirectory() && isDirectoryEmpty(file)) {
+					if (file.delete()) {
+						System.out.println("Deleted directory: " + file.getAbsolutePath());
+					} else {
+						System.out.println("Failed to delete directory: " + file.getAbsolutePath());
+					}
+				}
+			}
+		}
+	}
+
+	public void ls(ArrayList<String> args) {
+		if (args.size() > 1) {
 			System.out.println("too many arguments");
 			return;
 		}
-		File currentDir = new File(currDir);
-        File[] files = currentDir.listFiles();
 
-		// TODO: given argument r you should reverse the array
-		// if(args.size() != 0 && args.get(0) == "r"){
-		// 	// do reverse
-		// }
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-						System.out.println(file.getName() + " Directory");					
-                    } else {
-                        System.out.println(file.getName() + " File");
-                    }
-                }
-            }
-        }
+		File currentDir = new File(currDir);
+		File[] files = currentDir.listFiles();
+
+		if (files != null) {
+			Arrays.sort(files);
+		}
+
+		if (args.size() != 0 && args.get(0).charAt(0) == 'r') {
+
+			if (files != null) {
+				File[] reversedFiles = new File[files.length];
+				for (int i = 0; i < files.length; i++) {
+					reversedFiles[files.length - i - 1] = files[i];
+				}
+				files = reversedFiles;
+			}
+
+		}
+
+		if (files != null) {
+			for (File file : files) {
+				if (file.isDirectory()) {
+					System.out.println(file.getName() + " Directory");
+				} else {
+					System.out.println(file.getName() + " File");
+				}
+			}
+		}
+	}
 
 	private boolean isDirectoryEmpty(File directory) {
-        File[] files = directory.listFiles();
-        return (files != null) && (files.length == 0);
-    }
+		File[] files = directory.listFiles();
+		return (files != null) && (files.length == 0);
+	}
 
 	public void echo(ArrayList<String> args) {
 		history.add("echo");
@@ -236,9 +256,10 @@ public class Terminal {
 			System.out.println("Usage: cp file1 file2\n\t   cp -r dir1 dir2");
 		}
 	}
-	public void getHistory(){
+
+	public void getHistory() {
 		int numbering = 1;
-		for(String command : history){
+		for (String command : history) {
 			System.out.println(numbering + " - " + command);
 			numbering++;
 		}
@@ -280,7 +301,7 @@ public class Terminal {
 			default:
 				System.out.println(command + ": command not found");
 		}
-		if(this.history.size() > 15){
+		if (this.history.size() > 15) {
 			this.history.remove(this.history.size() - 1);
 		}
 		return false;
