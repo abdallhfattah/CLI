@@ -37,7 +37,6 @@ public class Terminal {
 
 	public void cd(ArrayList<String> args) {
 		history.add("cd");
-
 	}
 
 	public void mkdir(ArrayList<String> args) {
@@ -115,6 +114,28 @@ public class Terminal {
             }
         }
     }
+	public void ls(ArrayList<String> args){
+		if(args.size() > 1){
+			System.out.println("too many arguments");
+			return;
+		}
+		File currentDir = new File(currDir);
+        File[] files = currentDir.listFiles();
+
+		// TODO: given argument r you should reverse the array
+		// if(args.size() != 0 && args.get(0) == "r"){
+		// 	// do reverse
+		// }
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+						System.out.println(file.getName() + " Directory");					
+                    } else {
+                        System.out.println(file.getName() + " File");
+                    }
+                }
+            }
+        }
 
 	private boolean isDirectoryEmpty(File directory) {
         File[] files = directory.listFiles();
@@ -249,6 +270,9 @@ public class Terminal {
 				break;
 			case "history":
 				getHistory();
+				break;
+			case "ls":
+				ls(args);
 				break;
 			case "exit":
 				return true;
