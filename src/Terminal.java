@@ -16,6 +16,94 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 
+class Filter {
+
+	private String command;
+	private ArrayList<String> args;
+
+	Filter(String input) {
+		input += ' ';
+		this.command = "";
+		this.args = new ArrayList<String>();
+		int itr = 0;
+		// capture command
+		for (int i = 0; i < input.length(); i++) {
+			if (input.charAt(i) != ' ') {
+				this.command = getArg(input, i, ' ');
+				itr = command.length() + i;
+				break;
+			}
+		}
+		String arg = "";
+		// capture arguments
+		for (int i = itr; i < input.length(); i++) {
+			Character currChar = input.charAt(i);
+			if (currChar != ' ') {
+				if (currChar == '\"') {
+					i++;
+					arg = getArg(input , i , '\"');
+					args.add(arg);
+					i += arg.length();
+				}
+				else{
+					// cases "-r"
+					if(currChar == '-') i++;
+					arg = getArg(input , i , ' ');
+					i += arg.length();
+					args.add(arg);
+				}
+			}
+
+		}
+	}
+
+	String getArg(String input, int index , Character toStop) {
+		String deliver = "";
+		while (input.charAt(index) != toStop) {
+			deliver += input.charAt(index);
+			index++;
+		}
+		return deliver;
+	}
+
+	public String getCommandFiltered() {
+		return command;
+	}
+
+	public ArrayList<String> getArgsFiltered() {
+		return args;
+	}
+}
+
+class Parser {
+	String commandName;
+	ArrayList<String> args;
+
+	// This method will divide the input into commandName and args
+	// where "input" is the string command entered by the user
+	public boolean parse(String input) {
+		Filter filter = new Filter(input);
+
+		this.commandName = filter.getCommandFiltered();
+
+		this.args = filter.getArgsFiltered();
+
+		// System.out.println("======= Verify =======");
+		// System.out.println("command : " + commandName);
+		// System.out.println(args);
+
+		return true;
+	};
+
+	public String getCommandName() {
+		return commandName;
+	}
+
+	public ArrayList<String> getArgs() {
+		return args;
+	}
+}
+
 public class Terminal {
 	Parser parser;
 	Path newResultPath;
