@@ -257,6 +257,47 @@ public class Terminal {
 		}
 	}
 
+	public void touch(ArrayList<String> args) {
+	    history.add("touch");
+	    if (args.size() != 1) {
+	        System.err.println("Usage: touch <filename>");
+	        return;
+	    }
+	
+	    String fileName = args.get(0);
+	    File file = new File(fileName);
+	    try {
+	        if (file.createNewFile()) {
+	            System.out.println("File created: " + fileName);
+	        } else {
+	            System.out.println("File already exists: " + fileName);
+	        }
+	    } catch (IOException e) {
+	        System.err.println("Error creating the file: " + e.getMessage());
+	    }
+	}
+
+        public void rm(ArrayList<String> args) {
+	    history.add("rm");
+	    if (args.size() != 1) {
+	        System.err.println("Usage: rm <filename>");
+	        return;
+	    }
+	
+	    String fileName = args.get(0);
+	    File file = new File(fileName);
+	    if (file.exists()) {
+	        if (file.delete()) {
+	            System.out.println("File deleted: " + fileName);
+	        } else {
+	            System.err.println("Error deleting the file");
+	        }
+	    } else {
+	        System.err.println("File not found: " + fileName);
+	    }
+	}
+
+
 	public void getHistory() {
 		int numbering = 1;
 		for (String command : history) {
@@ -295,6 +336,12 @@ public class Terminal {
 			case "ls":
 				ls(args);
 				break;
+			case "touch":
+			    touch(args);
+			    break;
+			case "rm":
+			    rm(args);
+			    break;
 			case "exit":
 				return true;
 			// Add more command cases here.
