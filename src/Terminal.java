@@ -1,4 +1,4 @@
-import java.io.File;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -90,8 +90,36 @@ public class Terminal {
 		}
 	}
 
+	public void cat(ArrayList<String> args) throws IOException {
+		if (args.size() == 1) {
+			FileReader file = new FileReader(args.get(0));
+			BufferedReader reader = new BufferedReader(file);
+			String line;
+			while ((line = reader.readLine()) != null) {
+				System.out.println(line);
+			}
+		}
+		else if (args.size() == 2) {
+			FileReader file = new FileReader(args.get(0));
+			BufferedReader reader = new BufferedReader(file);
+			FileReader file2 = new FileReader(args.get(1));
+			BufferedReader reader2 = new BufferedReader(file2);
+			String line;
+			while ((line = reader.readLine()) != null) {
+				System.out.println(line);
+			}
+			while ((line = reader2.readLine()) != null) {
+				System.out.println(line);
+			}
+		}
+		else {
+			System.out.println("Cat takes 1 or 2 arguments!");
+			return;
+		}
+	}
+
 	// This method will choose the suitable command method to be called
-	public boolean chooseCommandAction(String command, ArrayList<String> args) {
+	public boolean chooseCommandAction(String command, ArrayList<String> args) throws IOException {
 		switch (command) {
 			case "pwd":
 				System.out.println(pwd());
@@ -107,6 +135,10 @@ public class Terminal {
 				break;
 			case "echo":
 				echo(args);
+				break;
+			case "cat":
+				cat(args);
+				break;
 			case "exit":
 				return true;
 			// Add more command cases here.
@@ -116,11 +148,12 @@ public class Terminal {
 		return false;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		Scanner scanner = new Scanner(System.in);
 		Terminal terminal = new Terminal();
 		while (true) {
+			System.out.print("> ");
 			String command = scanner.nextLine();
 			Parser parse = new Parser();
 			parse.parse(command);
