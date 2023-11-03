@@ -1,7 +1,8 @@
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Terminal {
@@ -118,6 +119,63 @@ public class Terminal {
 		}
 	}
 
+	public void cp(ArrayList<String> args) throws IOException {
+		if (args.size() == 3 && Objects.equals(args.get(0), "r")) {
+			Path sourceDirectory = Paths.get(args.get(1));
+			Path destinationDirectory = Paths.get(args.get(2));
+
+			try {
+				Files.walkFileTree(sourceDirectory, new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						// Calculate the relative path to the destination directory
+						Path relativePath = sourceDirectory.relativize(file);
+						Path destinationFile = destinationDirectory.resolve(relativePath);
+
+						// Copy the file to the destination directory
+						Files.copy(file, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+						// Calculate the relative path to the destination directory
+						Path relativePath = sourceDirectory.relativize(dir);
+						Path destinationDir = destinationDirectory.resolve(relativePath);
+
+						// Create the destination directory if it doesn't exist
+						if (!Files.exists(destinationDir)) {
+							Files.createDirectories(destinationDir);
+						}
+						return FileVisitResult.CONTINUE;
+					}
+				});
+
+				System.out.println("Directory copy completed successfully.");
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.err.println("Failed to copy the directory.");
+			}
+		}
+		else if (args.size() == 2) {
+			FileReader file = new FileReader(args.get(0));
+			BufferedReader reader = new BufferedReader(file);
+			String line;
+
+			FileWriter file2 = new FileWriter(args.get(1));
+			BufferedWriter writer = new BufferedWriter(file2);
+
+			while ((line = reader.readLine()) != null) {
+				writer.write(line);
+				writer.newLine();
+			}
+			writer.close();
+		}
+		else {
+			System.out.println("Usage: cp file1 file2\n\t   cp -r dir1 dir2");
+		}
+	}
+
 	// This method will choose the suitable command method to be called
 	public boolean chooseCommandAction(String command, ArrayList<String> args) throws IOException {
 		switch (command) {
@@ -138,6 +196,9 @@ public class Terminal {
 				break;
 			case "cat":
 				cat(args);
+				break;
+			case "cp":
+				cp(args);
 				break;
 			case "exit":
 				return true;
